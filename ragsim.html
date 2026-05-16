@@ -502,4 +502,79 @@ Semantic similarity helps find related information instead of exact keyword matc
           </p>
 
           <p>
+            3. Top relevant chunks were retrieved based on similarity score.
+          </p>
+
+          <p>
+            4. Retrieved context + user query were sent to the LLM.
+          </p>
+
+          <br>
+
+          <p>
+            <span class="highlight">Retrieved Context:</span>
+          </p>
+
+          <p>
+            ${combinedContext}
+          </p>
+
+          <br>
+
+          <p>
+            <span class="highlight">Simulated LLM Response:</span>
+          </p>
+
+          <p>
+            Based on the retrieved information, RAG improves response quality by
+            retrieving relevant external knowledge before generating an answer.
+            This helps reduce hallucinations, improve factual accuracy, and provide
+            context-aware responses.
+          </p>
+        </div>
+      `;
+
+      document.getElementById('finalAnswer').innerHTML = finalAnswer;
+    }
+
+    processDocuments();
+
+  </script>
+
+</body>
+</html>
 ```
+
+## What This Simulator Demonstrates
+
+### Step 1 — Knowledge Base
+
+You provide raw documents or text.
+
+### Step 2 — Chunking
+
+Large documents are broken into smaller chunks.
+
+### Step 3 — Embeddings
+
+Each chunk is converted into a numerical vector representation.
+
+### Step 4 — Vector Database
+
+Embeddings are stored for semantic retrieval.
+
+### Step 5 — Query Embedding
+
+The user query is also converted into a vector.
+
+### Step 6 — Similarity Search
+
+Cosine similarity retrieves the most relevant chunks.
+
+### Step 7 — LLM Generation
+
+Retrieved chunks + user query are sent to the LLM.
+
+### Step 8 — Final Response
+
+The LLM generates a grounded response using retrieved context.
