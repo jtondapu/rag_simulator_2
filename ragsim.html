@@ -1,0 +1,505 @@
+# Modern RAG Simulator (Single HTML File)
+
+Save the following as `rag-simulator.html` and open it in your browser.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAG Simulator</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Inter, system-ui, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0f172a, #020617);
+      color: white;
+      min-height: 100vh;
+      padding: 30px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: auto;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      color: #cbd5e1;
+      max-width: 800px;
+      margin: auto;
+      line-height: 1.7;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 24px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      transition: 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: #38bdf8;
+    }
+
+    .card h2 {
+      margin-bottom: 18px;
+      font-size: 1.3rem;
+      color: #7dd3fc;
+    }
+
+    textarea,
+    input {
+      width: 100%;
+      background: #0f172a;
+      color: white;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 10px;
+      margin-bottom: 15px;
+      resize: vertical;
+      font-size: 14px;
+    }
+
+    button {
+      background: linear-gradient(90deg, #0ea5e9, #6366f1);
+      border: none;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.3s ease;
+      width: 100%;
+    }
+
+    button:hover {
+      transform: scale(1.02);
+      opacity: 0.95;
+    }
+
+    .step {
+      margin-bottom: 20px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+    }
+
+    .step h3 {
+      color: #93c5fd;
+      margin-bottom: 10px;
+    }
+
+    .chip {
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.15);
+      color: #7dd3fc;
+      padding: 6px 10px;
+      margin: 4px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .vector-box {
+      background: #020617;
+      border-radius: 14px;
+      padding: 12px;
+      margin-top: 10px;
+      overflow-x: auto;
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+
+    .progress {
+      height: 12px;
+      background: #1e293b;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+
+    .retrieved-doc {
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(14, 165, 233, 0.08);
+      border: 1px solid rgba(14, 165, 233, 0.25);
+    }
+
+    .answer-box {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 18px;
+      border-radius: 18px;
+      margin-top: 14px;
+      line-height: 1.7;
+      color: #d1fae5;
+    }
+
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .flow-item {
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+    }
+
+    .highlight {
+      color: #facc15;
+      font-weight: bold;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    @media(max-width: 768px) {
+      .hero h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <div class="hero">
+      <h1>RAG Simulator</h1>
+      <p>
+        Understand how Retrieval-Augmented Generation (RAG) works step-by-step.
+        This simulator demonstrates chunking, embeddings, vector storage,
+        semantic retrieval, and LLM response generation.
+      </p>
+    </div>
+
+    <div class="grid">
+
+      <div class="card">
+        <h2>1. Input Knowledge Base</h2>
+
+        <textarea id="documents" rows="12">
+RAG stands for Retrieval-Augmented Generation.
+
+Embeddings convert text into numerical vector representations.
+
+Vector databases store embeddings for fast semantic search.
+
+When a user sends a query, relevant chunks are retrieved.
+
+The retrieved context and user query are sent to the LLM.
+
+RAG helps reduce hallucinations and improves response accuracy.
+
+Chunking breaks large documents into smaller meaningful sections.
+
+Semantic similarity helps find related information instead of exact keyword matches.
+        </textarea>
+
+        <button onclick="processDocuments()">Process Documents</button>
+
+        <div class="flow">
+          <div class="flow-item">Documents</div>
+          <div class="flow-item">Chunking</div>
+          <div class="flow-item">Embeddings</div>
+          <div class="flow-item">Vector DB</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>2. Ask a Question</h2>
+
+        <input
+          type="text"
+          id="query"
+          placeholder="Example: How does RAG reduce hallucinations?"
+        />
+
+        <button onclick="runRAG()">Run RAG Pipeline</button>
+
+        <div class="flow">
+          <div class="flow-item">User Query</div>
+          <div class="flow-item">Query Embedding</div>
+          <div class="flow-item">Similarity Search</div>
+          <div class="flow-item">LLM Response</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="grid" style="margin-top: 20px;">
+
+      <div class="card">
+        <h2>3. Chunking Step</h2>
+        <div id="chunks"></div>
+      </div>
+
+      <div class="card">
+        <h2>4. Embedding Generation</h2>
+        <div id="embeddings"></div>
+      </div>
+
+    </div>
+
+    <div class="grid" style="margin-top: 20px;">
+
+      <div class="card">
+        <h2>5. Vector Database</h2>
+        <div id="vectorDB"></div>
+      </div>
+
+      <div class="card">
+        <h2>6. Semantic Retrieval</h2>
+        <div id="retrieval"></div>
+      </div>
+
+    </div>
+
+    <div class="card" style="margin-top: 20px;">
+      <h2>7. Final LLM Response</h2>
+      <div id="finalAnswer"></div>
+    </div>
+
+    <div class="footer">
+      Built to visually explain the complete RAG pipeline.
+    </div>
+
+  </div>
+
+  <script>
+
+    let vectorStore = [];
+
+    function chunkText(text) {
+      return text
+        .split(/\n+/)
+        .map(chunk => chunk.trim())
+        .filter(chunk => chunk.length > 0);
+    }
+
+    function fakeEmbedding(text) {
+      const vector = [];
+
+      for (let i = 0; i < 8; i++) {
+        let value = 0;
+
+        for (let j = i; j < text.length; j += 8) {
+          value += text.charCodeAt(j);
+        }
+
+        vector.push(Number((value / 1000).toFixed(2)));
+      }
+
+      return vector;
+    }
+
+    function cosineSimilarity(a, b) {
+      let dot = 0;
+      let magA = 0;
+      let magB = 0;
+
+      for (let i = 0; i < a.length; i++) {
+        dot += a[i] * b[i];
+        magA += a[i] * a[i];
+        magB += b[i] * b[i];
+      }
+
+      return dot / (Math.sqrt(magA) * Math.sqrt(magB));
+    }
+
+    function processDocuments() {
+      const rawText = document.getElementById('documents').value;
+
+      const chunks = chunkText(rawText);
+
+      vectorStore = [];
+
+      const chunksDiv = document.getElementById('chunks');
+      const embeddingsDiv = document.getElementById('embeddings');
+      const vectorDBDiv = document.getElementById('vectorDB');
+
+      chunksDiv.innerHTML = '';
+      embeddingsDiv.innerHTML = '';
+      vectorDBDiv.innerHTML = '';
+
+      chunks.forEach((chunk, index) => {
+
+        const embedding = fakeEmbedding(chunk);
+
+        vectorStore.push({
+          id: index + 1,
+          text: chunk,
+          embedding
+        });
+
+        chunksDiv.innerHTML += `
+          <div class="step">
+            <h3>Chunk ${index + 1}</h3>
+            <p>${chunk}</p>
+          </div>
+        `;
+
+        embeddingsDiv.innerHTML += `
+          <div class="step">
+            <h3>Embedding ${index + 1}</h3>
+            <div class="vector-box">
+              [ ${embedding.join(', ')} ]
+            </div>
+          </div>
+        `;
+
+        vectorDBDiv.innerHTML += `
+          <div class="step">
+            <h3>Stored Vector ${index + 1}</h3>
+            <div class="chip">Chunk ID: ${index + 1}</div>
+            <div class="vector-box">
+              [ ${embedding.join(', ')} ]
+            </div>
+          </div>
+        `;
+      });
+
+      document.getElementById('retrieval').innerHTML = `
+        <p style="color:#94a3b8;">
+          Vector database ready. Ask a question to retrieve relevant chunks.
+        </p>
+      `;
+
+      document.getElementById('finalAnswer').innerHTML = `
+        <p style="color:#94a3b8;">
+          Waiting for user query...
+        </p>
+      `;
+    }
+
+    function runRAG() {
+
+      if (vectorStore.length === 0) {
+        alert('Please process documents first.');
+        return;
+      }
+
+      const query = document.getElementById('query').value;
+
+      if (!query.trim()) {
+        alert('Please enter a query.');
+        return;
+      }
+
+      const queryEmbedding = fakeEmbedding(query);
+
+      const scoredChunks = vectorStore.map(chunk => ({
+        ...chunk,
+        similarity: cosineSimilarity(queryEmbedding, chunk.embedding)
+      }));
+
+      scoredChunks.sort((a, b) => b.similarity - a.similarity);
+
+      const topResults = scoredChunks.slice(0, 3);
+
+      const retrievalDiv = document.getElementById('retrieval');
+
+      retrievalDiv.innerHTML = `
+        <div class="step">
+          <h3>User Query</h3>
+          <p>${query}</p>
+
+          <div class="vector-box">
+            Query Embedding: [ ${queryEmbedding.join(', ')} ]
+          </div>
+        </div>
+      `;
+
+      topResults.forEach((result, index) => {
+
+        const score = (result.similarity * 100).toFixed(1);
+
+        retrievalDiv.innerHTML += `
+          <div class="retrieved-doc">
+            <h3>Retrieved Chunk ${index + 1}</h3>
+
+            <p>${result.text}</p>
+
+            <div class="progress">
+              <div class="progress-fill" style="width:${score}%"></div>
+            </div>
+
+            <p style="margin-top:10px; color:#7dd3fc;">
+              Semantic Similarity: ${score}%
+            </p>
+          </div>
+        `;
+      });
+
+      const combinedContext = topResults
+        .map(r => r.text)
+        .join(' ');
+
+      const finalAnswer = `
+        <div class="answer-box">
+          <p>
+            <span class="highlight">How RAG answered this query:</span>
+          </p>
+
+          <br>
+
+          <p>
+            1. Your query was converted into an embedding vector.
+          </p>
+
+          <p>
+            2. The vector database searched for semantically similar chunks.
+          </p>
+
+          <p>
+```
